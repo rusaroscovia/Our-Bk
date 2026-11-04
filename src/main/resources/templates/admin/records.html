@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Financial records | BK</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<nav class="navbar navbar-bk">
+    <div class="container">
+        <a class="navbar-brand fw-bold" th:href="@{/admin/dashboard}"><span class="brand-mini">BK</span> Breakfast</a>
+        <a class="btn btn-outline-bk btn-sm" th:href="@{/admin/dashboard}">Dashboard</a>
+    </div>
+</nav>
+<main class="container py-4 py-lg-5">
+    <p class="eyebrow mb-2">FINANCIAL HISTORY</p>
+    <h1 class="h2 fw-semibold mb-4">Monthly records</h1>
+    <div class="alert alert-danger" role="alert" th:if="${error}" th:text="${error}"></div>
+    <form class="d-flex flex-wrap align-items-end gap-2 mb-4" method="get" th:action="@{/admin/records}">
+        <div>
+            <label for="month" class="form-label">Month</label>
+            <input id="month" name="month" type="month" class="form-control" th:value="${month}" required>
+        </div>
+        <button class="btn btn-bk" type="submit">Show month</button>
+    </form>
+    <section class="row g-3 mb-4">
+        <div class="col-12 col-md-4"><article class="summary-card h-100">
+            <p class="summary-label">Collected</p>
+            <p class="summary-value" th:text="${#numbers.formatDecimal(summary.totalCollectedRwf, 0, 'COMMA', 0, 'POINT')} + ' RWF'"></p>
+        </article></div>
+        <div class="col-12 col-md-4"><article class="summary-card h-100">
+            <p class="summary-label">Spent</p>
+            <p class="summary-value" th:text="${#numbers.formatDecimal(summary.totalSpentRwf, 0, 'COMMA', 0, 'POINT')} + ' RWF'"></p>
+        </article></div>
+        <div class="col-12 col-md-4"><article class="summary-card h-100">
+            <p class="summary-label">Balance</p>
+            <p class="summary-value" th:text="${#numbers.formatDecimal(summary.balanceRwf, 0, 'COMMA', 0, 'POINT')} + ' RWF'"></p>
+        </article></div>
+    </section>
+    <section class="panel mb-4">
+        <h2 class="h5 mb-3">Payments</h2>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead><tr><th>Date</th><th>Employee</th><th class="text-end">Amount (RWF)</th></tr></thead>
+                <tbody>
+                <tr th:each="payment : ${payments}">
+                    <td th:text="${payment.paymentDate}"></td>
+                    <td th:text="${payment.employee.name}"></td>
+                    <td class="text-end" th:text="${#numbers.formatDecimal(payment.amountRwf, 0, 'COMMA', 0, 'POINT')}"></td>
+                </tr>
+                <tr th:if="${payments.isEmpty()}"><td colspan="3" class="text-secondary">No payments for this month.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+    <section class="panel">
+        <h2 class="h5 mb-3">Expenses</h2>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead><tr><th>Date</th><th>Description</th><th class="text-end">Amount (RWF)</th></tr></thead>
+                <tbody>
+                <tr th:each="expense : ${expenses}">
+                    <td th:text="${expense.expenseDate}"></td>
+                    <td th:text="${expense.description}"></td>
+                    <td class="text-end" th:text="${#numbers.formatDecimal(expense.amountRwf, 0, 'COMMA', 0, 'POINT')}"></td>
+                </tr>
+                <tr th:if="${expenses.isEmpty()}"><td colspan="3" class="text-secondary">No expenses for this month.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+</body>
+</html>

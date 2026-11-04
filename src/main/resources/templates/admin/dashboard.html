@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admin dashboard | BK</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-bk">
+    <div class="container">
+        <a class="navbar-brand fw-bold" th:href="@{/admin/dashboard}"><span class="brand-mini">BK</span> Breakfast</a>
+        <div class="d-flex align-items-center gap-3">
+            <a class="nav-link" th:href="@{/admin/records(month=${month})}">Financial records</a>
+            <form method="post" th:action="@{/logout}">
+                <button class="btn btn-outline-bk btn-sm" type="submit">Sign out</button>
+            </form>
+        </div>
+    </div>
+</nav>
+<main class="container py-4 py-lg-5">
+    <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+        <div>
+            <p class="eyebrow mb-2">ADMIN DASHBOARD</p>
+            <h1 class="h2 fw-semibold mb-1">Breakfast overview</h1>
+            <p class="text-secondary mb-0" th:text="${#temporals.format(today, 'EEEE, d MMMM yyyy')}"></p>
+        </div>
+        <div class="status-pill" th:classappend="${votingOpen} ? ' is-open' : ''">
+            <span class="status-dot" aria-hidden="true"></span>
+            <span th:text="${votingOpen} ? 'Voting is open' : 'Voting is closed'"></span>
+        </div>
+    </div>
+
+    <div class="alert alert-success" role="status" th:if="${success}" th:text="${success}"></div>
+    <div class="alert alert-danger" role="alert" th:if="${error}" th:text="${error}"></div>
+
+    <section class="row g-3 mb-4">
+        <div class="col-12 col-md-4">
+            <article class="summary-card h-100">
+                <p class="summary-label">Collected this month</p>
+                <p class="summary-value" th:text="${#numbers.formatDecimal(summary.totalCollectedRwf, 0, 'COMMA', 0, 'POINT')} + ' RWF'"></p>
+            </article>
+        </div>
+        <div class="col-12 col-md-4">
+            <article class="summary-card h-100">
+                <p class="summary-label">Spent this month</p>
+                <p class="summary-value" th:text="${#numbers.formatDecimal(summary.totalSpentRwf, 0, 'COMMA', 0, 'POINT')} + ' RWF'"></p>
+            </article>
+        </div>
+        <div class="col-12 col-md-4">
+            <article class="summary-card h-100">
+                <p class="summary-label">Remaining balance</p>
+                <p class="summary-value" th:text="${#numbers.formatDecimal(summary.balanceRwf, 0, 'COMMA', 0, 'POINT')} + ' RWF'"></p>
+                <p class="summary-detail mb-0" th:text="${summary.employeesPaid} + ' employees paid this month'"></p>
+            </article>
+        </div>
+    </section>
+
+    <div class="row g-4">
+        <div class="col-12 col-xl-7">
+            <section class="panel mb-4">
+                <div class="panel-heading">
+                    <div>
+                        <p class="eyebrow mb-1">DAILY VOTE</p>
+                        <h2 class="h5 mb-0">Today's results</h2>
+                    </div>
+                    <form method="post" th:action="${votingOpen} ? @{/admin/voting/close} : @{/admin/voting/open}">
+                        <button class="btn btn-bk btn-sm" type="submit"
+                                th:text="${votingOpen} ? 'Close voting' : 'Open voting'"></button>
+                    </form>
+                </div>
+                <div class="vote-results">
+                    <div class="vote-row" th:each="count : ${todayResult.counts}">
+                        <span th:text="${count.displayName}"></span>
+                        <span class="vote-count" th:text="${count.votes} + ' votes'"></span>
+                    </div>
+                </div>
+                <p class="winner-note mb-0" th:if="${!todayResult.winners.isEmpty()}">
+                    <span th:if="${todayResult.tied}">Tie between </span>
+                    <span th:unless="${todayResult.tied}">Leading option: </span>
+                    <strong th:text="${#strings.listJoin(todayResult.winners, ', ')}"></strong>
+                </p>
+                <p class="text-secondary mb-0" th:if="${todayResult.winners.isEmpty()}">No votes have been recorded today.</p>
+            </section>
+
+            <section class="panel">
+                <div class="panel-heading">
+                    <div>
+                        <p class="eyebrow mb-1">TEAM</p>
+                        <h2 class="h5 mb-0">Employees</h2>
+                    </div>
+                    <span class="record-count" th:text="${employees.size()} + ' total'"></span>
+                </div>
+                <form class="row g-2 mb-3" method="post" th:action="@{/admin/employees}">
+                    <div class="col">
+                        <label class="visually-hidden" for="employeeName">Employee name</label>
+                        <input id="employeeName" name="name" class="form-control" maxlength="100"
+                               placeholder="Employee name" required>
+                    </div>
+                    <div class="col-auto">
+                        <button class="btn btn-bk" type="submit">Add employee</button>
+                    </div>
+                </form>
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead><tr><th>Name</th><th class="text-end">Update name</th></tr></thead>
+                        <tbody>
+                        <tr th:each="employee : ${employees}">
+                            <td th:text="${employee.name}"></td>
+                            <td>
+                                <form class="d-flex justify-content-end gap-2" method="post"
+                                      th:action="@{/admin/employees/{id}/rename(id=${employee.id})}">
+                                    <input class="form-control form-control-sm rename-input" name="name"
+                                           th:value="${employee.name}" maxlength="100" required
+                                           th:attr="aria-label=|New name for ${employee.name}|">
+                                    <button class="btn btn-outline-bk btn-sm" type="submit">Save</button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr th:if="${employees.isEmpty()}"><td colspan="2" class="text-secondary">No employees added yet.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+
+        <div class="col-12 col-xl-5">
+            <section class="panel mb-4">
+                <div class="panel-heading">
+                    <div>
+                        <p class="eyebrow mb-1">MONTHLY CONTRIBUTIONS</p>
+                        <h2 class="h5 mb-0">Record a payment</h2>
+                    </div>
+                </div>
+                <form method="post" th:action="@{/admin/payments}">
+                    <label class="form-label" for="paymentEmployee">Employee</label>
+                    <select id="paymentEmployee" name="employeeId" class="form-select mb-3" required>
+                        <option value="" selected disabled>Select employee</option>
+                        <option th:each="employee : ${employees}" th:value="${employee.id}" th:text="${employee.name}"></option>
+                    </select>
+                    <label class="form-label" for="paymentAmount">Amount (RWF)</label>
+                    <input id="paymentAmount" name="amountRwf" type="number" min="1" step="1"
+                           class="form-control mb-3" required>
+                    <label class="form-label" for="paymentDate">Date</label>
+                    <input id="paymentDate" name="paymentDate" type="date" class="form-control mb-3"
+                           th:value="${today}" required>
+                    <button class="btn btn-bk w-100" type="submit">Record payment</button>
+                </form>
+            </section>
+
+            <section class="panel mb-4">
+                <div class="panel-heading">
+                    <div>
+                        <p class="eyebrow mb-1">ACTUAL COSTS</p>
+                        <h2 class="h5 mb-0">Record an expense</h2>
+                    </div>
+                </div>
+                <form method="post" th:action="@{/admin/expenses}">
+                    <label class="form-label" for="expenseDescription">Description</label>
+                    <input id="expenseDescription" name="description" maxlength="200" class="form-control mb-3"
+                           placeholder="Breakfast purchase" required>
+                    <label class="form-label" for="expenseAmount">Amount (RWF)</label>
+                    <input id="expenseAmount" name="amountRwf" type="number" min="1" step="1"
+                           class="form-control mb-3" required>
+                    <label class="form-label" for="expenseDate">Date</label>
+                    <input id="expenseDate" name="expenseDate" type="date" class="form-control mb-3"
+                           th:value="${today}" required>
+                    <button class="btn btn-bk w-100" type="submit">Record expense</button>
+                </form>
+            </section>
+
+            <section class="panel mb-4">
+                <div class="panel-heading">
+                    <div>
+                        <p class="eyebrow mb-1">BREAKFAST OPTIONS</p>
+                        <h2 class="h5 mb-0">Product prices</h2>
+                    </div>
+                </div>
+                <form class="price-row" method="post"
+                      th:each="product : ${products}"
+                      th:action="@{/admin/products/{name}/price(name=${product.name})}">
+                    <label class="fw-medium" th:for="'price-' + ${product.name.displayName}"
+                           th:text="${product.name.displayName}"></label>
+                    <input class="form-control form-control-sm price-input" type="number" min="1" step="1"
+                           name="priceRwf" th:id="'price-' + ${product.name.displayName}"
+                           th:value="${product.priceRwf}" required>
+                    <span class="text-secondary small">RWF</span>
+                    <button class="btn btn-outline-bk btn-sm" type="submit">Save</button>
+                </form>
+            </section>
+
+            <section class="panel">
+                <div class="panel-heading">
+                    <div>
+                        <p class="eyebrow mb-1">PUBLIC REPORTS</p>
+                        <h2 class="h5 mb-0">Employee visibility</h2>
+                    </div>
+                </div>
+                <p class="text-secondary small">Only published reports are available on the public page.</p>
+                <form class="d-flex flex-wrap gap-2" method="post" th:action="@{/admin/reports/publish}">
+                    <button class="btn btn-bk btn-sm" name="published" value="true" type="submit"
+                            th:disabled="${reportsPublished}">Publish reports</button>
+                    <button class="btn btn-outline-bk btn-sm" name="published" value="false" type="submit"
+                            th:disabled="${!reportsPublished}">Hide reports</button>
+                    <span class="small text-secondary align-self-center"
+                          th:text="${reportsPublished} ? 'Currently public' : 'Currently hidden'"></span>
+                </form>
+            </section>
+        </div>
+    </div>
+
+    <section class="panel mt-4">
+        <div class="panel-heading">
+            <div>
+                <p class="eyebrow mb-1">THIS MONTH</p>
+                <h2 class="h5 mb-0">Recent financial records</h2>
+            </div>
+            <a class="btn btn-outline-bk btn-sm" th:href="@{/admin/records(month=${month})}">View all records</a>
+        </div>
+        <div class="row g-4">
+            <div class="col-12 col-lg-6">
+                <h3 class="h6">Payments</h3>
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle">
+                        <thead><tr><th>Date</th><th>Employee</th><th class="text-end">Amount</th></tr></thead>
+                        <tbody>
+                        <tr th:each="payment : ${payments}">
+                            <td th:text="${payment.paymentDate}"></td>
+                            <td th:text="${payment.employee.name}"></td>
+                            <td class="text-end" th:text="${#numbers.formatDecimal(payment.amountRwf, 0, 'COMMA', 0, 'POINT')} + ' RWF'"></td>
+                        </tr>
+                        <tr th:if="${payments.isEmpty()}"><td colspan="3" class="text-secondary">No payments this month.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="col-12 col-lg-6">
+                <h3 class="h6">Expenses</h3>
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle">
+                        <thead><tr><th>Date</th><th>Description</th><th class="text-end">Amount</th></tr></thead>
+                        <tbody>
+                        <tr th:each="expense : ${expenses}">
+                            <td th:text="${expense.expenseDate}"></td>
+                            <td th:text="${expense.description}"></td>
+                            <td class="text-end" th:text="${#numbers.formatDecimal(expense.amountRwf, 0, 'COMMA', 0, 'POINT')} + ' RWF'"></td>
+                        </tr>
+                        <tr th:if="${expenses.isEmpty()}"><td colspan="3" class="text-secondary">No expenses this month.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+</body>
+</html>
