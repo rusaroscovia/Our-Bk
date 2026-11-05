@@ -81,7 +81,8 @@ page and published-report view are available at `/vote`.
 Employees can open `/vote` without creating an account, submit a name and one of
 the three fixed options, and view today's counts and winning option. Voting is
 available only while the administrator has opened it. The page explains that
-name-based voting cannot verify identity.
+name-based voting cannot verify identity. Each of the three options uses its
+matching product image, with the option name and current price below it.
 
 The public controller checks the report-publishing setting before loading any
 financial summary, payment, or expense records. Unpublished financial data is

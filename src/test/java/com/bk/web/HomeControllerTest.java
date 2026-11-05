@@ -26,7 +26,10 @@ class HomeControllerTest {
     void homePageLoads() throws Exception {
         mockMvc.perform(get("/"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("BREAKFAST MANAGEMENT SYSTEM")));
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Choose breakfast for today.")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("/images/bread.png")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("/images/chapati.jpg")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("/images/andazi.jpg")));
     }
 
     @Test

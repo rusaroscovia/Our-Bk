@@ -9,22 +9,42 @@
     <link rel="stylesheet" th:href="@{/css/app.css}">
 </head>
 <body>
-<main class="container min-vh-100 d-flex align-items-center py-5">
-    <section class="welcome-card mx-auto w-100">
-        <div class="brand-mark" aria-hidden="true">BK</div>
-        <p class="eyebrow mb-2">BREAKFAST MANAGEMENT SYSTEM</p>
-        <h1 class="display-5 fw-semibold mb-3">Good mornings start here.</h1>
-        <p class="lead text-secondary mb-4">
-            A simple place to manage breakfast contributions, expenses and daily choices.
-        </p>
-        <div class="d-flex flex-wrap gap-2 mb-4">
-            <a class="btn btn-bk" th:href="@{/vote}">Vote for today's breakfast</a>
-            <a class="btn btn-outline-bk" th:href="@{/admin/login}">Administrator login</a>
+<header class="home-header">
+    <nav class="container home-nav" aria-label="Main navigation">
+        <a class="home-brand" th:href="@{/}">
+            <span class="brand-mini" aria-hidden="true">BK</span>
+            <span>Breakfast</span>
+        </a>
+        <a class="home-admin-link" th:href="@{/admin/login}">Administrator login</a>
+    </nav>
+</header>
+<main class="home-page container py-5">
+    <section class="home-layout">
+        <div class="home-intro">
+            <p class="eyebrow mb-3">BK BREAKFAST</p>
+            <h1 class="mb-3">Choose breakfast for today.</h1>
+            <p class="home-description">
+                Vote for what we should have, see today's results, and keep track of contributions and expenses.
+            </p>
+            <a class="btn btn-bk home-vote-link" th:href="@{/vote}">Vote for today's breakfast</a>
         </div>
-        <div class="setup-note">
-            <span class="status-dot" aria-hidden="true"></span>
-            Pick today's breakfast together, with simple daily voting and clear reports when published.
-        </div>
+        <section class="home-menu" aria-labelledby="home-menu-heading">
+            <h2 id="home-menu-heading">On the menu</h2>
+            <div class="home-products">
+                <figure class="home-product">
+                    <img th:src="@{/images/bread.png}" alt="Bread" loading="lazy">
+                    <figcaption>Bread</figcaption>
+                </figure>
+                <figure class="home-product">
+                    <img th:src="@{/images/chapati.jpg}" alt="Chapati" loading="lazy">
+                    <figcaption>Chapati</figcaption>
+                </figure>
+                <figure class="home-product">
+                    <img th:src="@{/images/andazi.jpg}" alt="Andazi" loading="lazy">
+                    <figcaption>Andazi</figcaption>
+                </figure>
+            </div>
+        </section>
     </section>
 </main>
 </body>

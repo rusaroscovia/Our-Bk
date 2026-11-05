@@ -38,23 +38,32 @@
                     </span>
                 </div>
 
-                <form method="post" th:action="@{/vote}" th:if="${votingOpen}">
-                    <label class="form-label fw-medium" for="voterName">Your name</label>
-                    <input id="voterName" name="voterName" class="form-control mb-3"
-                           maxlength="100" autocomplete="name" required>
+                <form method="post" th:action="@{/vote}">
+                    <div th:if="${votingOpen}">
+                        <label class="form-label fw-medium" for="voterName">Your name</label>
+                        <input id="voterName" name="voterName" class="form-control mb-3"
+                               maxlength="100" autocomplete="name" required>
+                    </div>
                     <fieldset class="mb-3">
                         <legend class="form-label fw-medium">Breakfast option</legend>
-                        <label class="option-card" th:each="product : ${products}">
-                            <input class="form-check-input" type="radio" name="productName"
-                                   th:value="${product.name}" required>
-                            <span class="option-details">
-                                <span class="fw-semibold" th:text="${product.name.displayName}"></span>
-                                <span class="option-price"
-                                      th:text="${#numbers.formatDecimal(product.priceRwf, 0, 'COMMA', 0, 'POINT')} + ' RWF'"></span>
-                            </span>
-                        </label>
+                        <div class="row g-3">
+                            <div class="col-12 col-sm-4" th:each="product : ${products}">
+                                <label class="product-option">
+                                    <input class="product-choice-input" type="radio" name="productName"
+                                           th:value="${product.name}" th:disabled="${!votingOpen}"
+                                           th:required="${votingOpen}">
+                                    <span class="product-option-card">
+                                        <img class="product-image" th:src="${product.name.imagePath}"
+                                             th:alt="${product.name.displayName}" loading="lazy">
+                                        <span class="product-option-name" th:text="${product.name.displayName}"></span>
+                                        <span class="option-price"
+                                              th:text="${#numbers.formatDecimal(product.priceRwf, 0, 'COMMA', 0, 'POINT')} + ' RWF'"></span>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
                     </fieldset>
-                    <button class="btn btn-bk btn-lg w-100" type="submit">Submit vote</button>
+                    <button class="btn btn-bk btn-lg w-100" type="submit" th:if="${votingOpen}">Submit vote</button>
                 </form>
                 <div class="closed-note" th:unless="${votingOpen}">
                     Voting is closed for today. You can still see the current result below.

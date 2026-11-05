@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
@@ -85,12 +86,28 @@ class PublicControllerTest {
 
     @Test
     void publicVotingPageIsAccessibleWithoutAuthentication() throws Exception {
+        when(votingService.isVotingOpen()).thenReturn(true);
+
         mockMvc.perform(get("/vote"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("What should we have?")))
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("Name-based voting cannot verify identity")));
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Name-based voting cannot verify identity")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("/images/bread.png")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("/images/chapati.jpg")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("/images/andazi.jpg")));
 
         verifyNoInteractions(financialService, paymentService, expenseService);
+    }
+
+    @Test
+    void productImagesRemainVisibleWhenVotingIsClosed() throws Exception {
+        mockMvc.perform(get("/vote"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("/images/bread.png")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("/images/chapati.jpg")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("/images/andazi.jpg")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("disabled=\"disabled\"")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Voting is closed for today")));
     }
 
     @Test
@@ -110,6 +127,19 @@ class PublicControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("This month's financial report")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("12,000 RWF")));
+    }
+
+    @Test
+    void productImagesAreServedAsTheirCorrectImageTypes() throws Exception {
+        mockMvc.perform(get("/images/bread.png"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.IMAGE_PNG));
+        mockMvc.perform(get("/images/chapati.jpg"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.IMAGE_JPEG));
+        mockMvc.perform(get("/images/andazi.jpg"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.IMAGE_JPEG));
     }
 
     @Test
